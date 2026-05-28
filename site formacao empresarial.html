@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CleanTrace | Prevention You Can See</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- Variáveis de Cores --- */
+        :root {
+            --bg-beige: #F5F2EB;
+            --bg-beige-light: #FDFCF9;
+            --dark-blue: #0F172A;
+            --mid-blue: #0284C7;
+            --light-blue: #38BDF8;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --white: #FFFFFF;
+        }
+
+        /* --- Estilos Globais --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-beige); color: var(--text-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* --- Cabeçalho --- */
+        header { background-color: var(--dark-blue); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { color: var(--white); font-size: 1.5rem; font-weight: bold; }
+        .logo span { color: var(--light-blue); }
+        nav ul { list-style: none; display: flex; gap: 2rem; flex-wrap: wrap; }
+        nav a { color: var(--white); text-decoration: none; font-weight: 500; cursor: pointer; transition: color 0.3s; }
+        nav a:hover, nav a.active { color: var(--light-blue); }
+
+        /* --- Tipografia --- */
+        h1, h2, h3 { color: var(--dark-blue); line-height: 1.2; }
+        .section-title { font-size: 2.5rem; font-weight: 800; text-align: center; margin-bottom: 3rem; margin-top: 3rem; }
+        .text-gradient { background: linear-gradient(90deg, var(--dark-blue) 0%, var(--light-blue) 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* --- Layout --- */
+        main { flex: 1; padding: 3rem 5%; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .page { display: none; animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        .page.active { display: block; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--white); border-radius: 20px; padding: 2.5rem; box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12); }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2.5rem; margin-bottom: 4rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
+        .grid-5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
+
+        /* --- Botões e Formulários --- */
+        .btn { background: var(--light-blue); color: var(--dark-blue); padding: 1rem 2rem; border: none; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-block; text-align: center; }
+        .btn:hover { background: var(--dark-blue); color: var(--white); transform: scale(1.02); }
+        .btn-white { background: var(--white); color: var(--dark-blue); }
+        .btn-white:hover { background: var(--light-blue); color: var(--dark-blue); }
+
+        .form-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; text-align: left; }
+        .form-group label { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: inherit; }
+        .form-group input, .form-group textarea, .form-group select { padding: 1rem; border: 1px solid #E2E8F0; border-radius: 12px; font-size: 1rem; background-color: var(--white); transition: all 0.3s ease; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--light-blue); box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1); }
+
+        /* --- Hero Section --- */
+        .hero { background: linear-gradient(135deg, var(--dark-blue) 0%, #1e293b 100%); color: var(--white); border-radius: 30px; padding: 6rem 3rem; text-align: center; margin-bottom: 4rem; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3); }
+        .hero h2 { color: var(--light-blue); font-size: 1rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 1rem; }
+        .hero h1 { font-size: 4rem; color: var(--white); margin-bottom: 1.5rem; letter-spacing: -1px; }
+        .hero p { font-size: 1.25rem; color: #CBD5E1; max-width: 700px; margin: 0 auto; }
+
+        /* --- Como Funciona --- */
+        .step-card { text-align: center; background: transparent; padding: 1rem; }
+        .step-number { width: 60px; height: 60px; background: var(--light-blue); color: var(--dark-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin: 0 auto 1.5rem auto; box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); }
+        .step-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .step-card p { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* --- Imagens e Impacto --- */
+        .img-modern {
+            background-image: url('cleantrace dispositivo.jpeg');
+            background-size: cover;       /* Força a imagem a cobrir todo o espaço disponível sem distorcer */
+            background-position: center;  /* Centra a imagem na div */
+            background-repeat: no-repeat; /* Evita que a imagem se repita */
+            min-height: 300px;            /* Define uma altura mínima para que a imagem não desapareça em ecrãs pequenos */
+            width: 100%;                  /* Garante que ocupa toda a largura da coluna do grid */
+            border-radius: 1.5rem;        /* Mantém os cantos arredondados iguais aos do teu card */
+}        .vs-badge { background: var(--bg-beige); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: inline-block; margin-bottom: 1.5rem; }
+        
+        .impact-card { 
+            text-align: center; 
+            background: var(--dark-blue); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 180px; 
+            padding: 2rem;
+        }
+        .impact-card h3 { 
+            color: var(--light-blue); 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            line-height: 1.4; 
+            margin: 0; 
+        }
+
+        /* --- FAQ --- */
+        .faq-item { background: var(--white); padding: 2rem; border-radius: 15px; border-left: 4px solid var(--light-blue); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 1.5rem; }
+        .faq-item h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--dark-blue); display: flex; align-items: center; gap: 10px; }
+        .faq-item h3::before { content: '?'; background: var(--bg-beige); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--text-muted); font-weight: 800; }
+        .faq-item p { color: var(--text-muted); font-size: 0.95rem; padding-left: 34px; }
+
+        /* --- MOTIVAÇÃO (Design Clean) --- */
+        .metric-card { background: var(--white); border-radius: 20px; padding: 3rem 2rem; text-align: center; box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08); display: flex; flex-direction: column; justify-content: center; align-items: center; transition: transform 0.3s ease, box-shadow 0.3s ease; border-bottom: 4px solid var(--light-blue); }
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12); }
+        .metric-value { font-size: 4rem; font-weight: 800; color: var(--light-blue); margin-bottom: 1rem; line-height: 1; }
+        .metric-text { color: var(--text-dark); font-size: 1.05rem; font-weight: 500; }
+        
+        .external-note { text-align: center; max-width: 900px; margin: 2rem auto 4rem auto; padding: 1.5rem 2rem; background-color: var(--white); border-radius: 12px; color: var(--text-muted); font-style: italic; border-left: 4px solid var(--mid-blue); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+
+        .card-problema-clean { border-top: 5px solid #EF4444; }
+        .card-oportunidade-clean { border-top: 5px solid var(--light-blue); }
+
+        .list-modern { list-style: none; }
+        .list-modern li { position: relative; padding-left: 2rem; margin-bottom: 1rem; color: var(--text-muted); }
+        .list-modern li::before { content: '→'; position: absolute; left: 0; color: var(--light-blue); font-weight: bold; }
+
+        /* --- Equipa --- */
+        .team-member { text-align: center; padding: 2rem; }
+        .team-photo { width: 150px; height: 150px; background-color: #CBD5E1; background-size: cover; background-position: center; border-radius: 50%; margin: 0 auto 1.5rem auto; border: 4px solid var(--white); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .team-member h3 { font-size: 1.25rem; margin-bottom: 0.25rem; }
+        .team-member p { color: var(--mid-blue); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .cta-banner { background: linear-gradient(135deg, var(--bg-beige-light) 0%, #E2E8F0 100%); border-left: 6px solid var(--mid-blue); text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
+        .cta-content { flex: 1; min-width: 300px; }
+        .cta-banner h2 { font-size: 2rem; margin-bottom: 1rem; }
+
+        /* --- Simulação e Pacotes --- */
+        .pkg-card { border: 2px solid transparent; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
+        .pkg-lar { background: linear-gradient(135deg, var(--mid-blue) 0%, #0369A1 100%); color: var(--white); border: none; box-shadow: 0 15px 35px rgba(2, 132, 199, 0.2); }
+        .pkg-lar h3 { color: var(--white); }
+        .pkg-lar .pkg-type { color: var(--light-blue); }
+        .pkg-lar .list-modern li { color: #E0F2FE; }
+        .pkg-domicilio { background: linear-gradient(135deg, var(--dark-blue) 0%, #1e293b 100%); color: var(--white); border: none; }
+        .pkg-domicilio h3 { color: var(--light-blue); }
+        .pkg-domicilio .pkg-type { color: #94A3B8; }
+        .pkg-domicilio .list-modern li { color: #CBD5E1; }
+        .pkg-type { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; }
+        .pkg-card ul { margin-top: auto; padding-top: 2rem; }
+        .roi-form-container { background: var(--white); border-radius: 20px; padding: 2.5rem; box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08); }
+
+        /* --- Rodapé --- */
+        footer { background-color: var(--dark-blue); color: var(--white); text-align: center; padding: 2rem 5%; margin-top: auto; }
+        footer p { margin-bottom: 0.5rem; }
+        footer a { color: var(--light-blue); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Clean<span>Trace</span></div>
+        <nav>
+            <ul>
+                <li><a onclick="showPage('home')" id="link-home" class="active">O Nosso Produto</a></li>
+                <li><a onclick="showPage('motivacao')" id="link-motivacao">Motivação</a></li>
+                <li><a onclick="showPage('equipa')" id="link-equipa">A Nossa Equipa</a></li>
+                <li><a onclick="showPage('simulacao')" id="link-simulacao">Simulação de Venda</a></li>
+                <li><a onclick="showPage('parceiros')" id="link-parceiros">Parceiros</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="page active">
+            <div class="hero">
+                <h2>Tornamos o Invisível Visível</h2>
+                <h1>Prevention You Can See<span></span></h1>
+                <p>Monitorização ambiental inteligente através de uma rede de sensores avançados para garantir espaços mais seguros e operações otimizadas.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="img-modern" style="background-image: url('cleantrace dispositivo.jpeg'); background-size: cover; background-position: center; min-height: 350px; border-radius: 1.5rem;"></div>                <div class="card">
+                    <h3 style="font-size: 1.8rem; margin-bottom: 1rem;">Sobre Nós</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">O CleanTrace é um sistema de monitorização contínua que avalia a qualidade e os dados ambientais de qualquer espaço em tempo real.</p>
+                    <p style="color: var(--text-muted);">Ao recolher dados precisos através de hardware otimizado, permite atuar preventivamente antes que os problemas se agravem, protegendo a saúde de quem mais importa.</p>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="vs-badge">01. Missão</div>
+                    <p>Promover ambientes mais seguros através da monitorização inteligente e da gestão preventiva da desinfeção.</p>
+                </div>
+                <div class="card">
+                    <div class="vs-badge">02. Visão</div>
+                    <p>Tornar-se uma solução de referência na prevenção de riscos sanitários em instituições de saúde.</p>
+                </div>
+                <div class="card">
+                    <div class="vs-badge">03. Valores</div>
+                    <p>Prevenção, Inovação, Segurança, Transparência, Rigor e Responsabilidade Social.</p>
+                </div>
+            </div>
+
+            <h2 class="section-title">Como <span class="text-gradient">Funciona</span></h2>
+            <div class="grid-4" style="margin-bottom: 5rem;">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Instalação Simples</h3>
+                    <p>Posicionamento do dispositivo de forma rápida e maioritariamente sem necessidade de obras invasivas nas zonas pretendidas.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Monitorização em Tempo Real</h3>
+                    <p>Recolha e processamento constante de dados ambientais críticos transmitidos para o nosso software.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Alertas Inteligentes</h3>
+                    <p>Notificações imediatas enviadas para a equipa quando os padrões saem das margens de segurança normais.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Ação e Limpeza</h3>
+                    <p>As equipas atuam apenas onde e quando é efetivamente necessário, garantindo eficiência máxima.</p>
+                </div>
+            </div>
+
+            <h2 class="section-title">O Nosso <span class="text-gradient">Impacto</span></h2>
+            <div class="grid-3">
+                <div class="card impact-card">
+                    <h3 style="color: white;">Redução de gastos em limpezas potencialmente desnecessárias</h3>
+                </div>
+                <div class="card impact-card">
+                    <h3 style="color: white;">Redução direta na carga de trabalho da equipa</h3>
+                </div>
+                <div class="card impact-card">
+                    <h3 style="color: white;">Garantia de monitorização e alertas contínuos</h3>
+                </div>
+            </div>
+
+            <h2 class="section-title">Perguntas <span class="text-gradient">Frequentes</span></h2>
+            <div class="grid-2" style="margin-bottom: 5rem;">
+                <div class="faq-item">
+                    <h3>Como é feita a instalação?</h3>
+                    <p>A instalação é rápida, planeada e não intrusiva. A nossa equipa fixa os dispositivos CleanTrace nos pontos estratégicos, sem necessidade de obras complexas.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Precisa de Wi-Fi em todas as divisões?</h3>
+                    <p>Não necessariamente. Cada dispositivo possui um sistema de armazenamento local por Cartão MicroSD para que, se a ligação cair, o dispositivo continue a registar e a guardar todos os dados ambientais em segurança.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Os dados dos utentes estão seguros?</h3>
+                    <p>Totalmente seguros. Os sensores apenas recolhem métricas ambientais anonimizadas. Todos os dados são encriptados de ponta a ponta, garantindo total privacidade e conformidade legal.</p>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Diagnóstico do seu espaço</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">A nossa tecnologia molda-se ao seu problema. Conte-nos o que precisa de otimizar.</p>
+                    <form onsubmit="alert('Feedback submetido com sucesso. Obrigado!'); return false;">
+                        <div class="form-group">
+                            <textarea rows="5" placeholder="Descreva as suas dificuldades com a higienização ou monitorização atual..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Enviar Diagnóstico</button>
+                    </form>
+                </div>
+                
+                <div class="roi-form-container" style="background-color: var(--bg-beige-light);">
+                    <h3 style="margin-bottom: 1rem;">Simulação de Venda</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Descubra o potencial de poupança financeira da sua infraestrutura.</p>
+                    <form onsubmit="handleSimulation(event)">
+                        <div class="form-group">
+                            <label>Pacote Pretendido</label>
+                            <select required>
+                                <option value="" disabled selected>Selecione a modalidade...</option>
+                                <option value="lar">CleanTrace Lar (Compra)</option>
+                                <option value="domicilio">CleanTrace Domicílio (Aluguer)</option>
+                            </select>
+                        </div>
+                        <div class="grid-2" style="gap: 1rem; margin-bottom: 0; grid-template-columns: 1fr 1fr;">
+                            <div class="form-group">
+                                <label>Nº Zonas Comuns</label>
+                                <input type="number" required min="1" placeholder="Ex: 5">
+                            </div>
+                            <div class="form-group">
+                                <label>Área (m²)</label>
+                                <input type="number" required min="10" placeholder="Ex: 800">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Obter Simulação Financeira</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="motivacao" class="page">
+            <h1 class="section-title">A Realidade do <span class="text-gradient">Setor</span></h1>
+            
+            <div class="grid-3" style="margin-bottom: 2rem;">
+                <div class="metric-card">
+                    <div class="metric-value">48%</div>
+                    <div class="metric-text">ainda regista as limpezas realizadas apenas em formato de papel</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">84%</div>
+                    <div class="metric-text">não utiliza nenhuma solução tecnológica para monitorizar a higiene ou qualidade ambiental</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">52%</div>
+                    <div class="metric-text">afirma que o maior desafio na gestão da higiene é a falta de tempo da equipa</div>
+                </div>
+            </div>
+
+            <div class="metric-text">
+                <p class="external-note">Adicionalmente, muitos destes estabelecimentos recorrem a <strong>empresas externas de forma pontual (anualmente)</strong> para avaliar estes parâmetros ambientais, o que impossibilita uma ação corretiva contínua e atempada.</p>
+            </div>
+
+            <h2 class="section-title">O Paradigma Atual vs <span class="text-gradient">Futuro</span></h2>
+            
+            <div class="grid-2">
+                <div class="card card-problema-clean">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Gestão Baseada em Rotina</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">A dependência de calendários fixos em lares e espaços de saúde gera falhas críticas e custos invisíveis.</p>
+                    <ul class="list-modern">
+                        <li><strong>Desperdício de Recursos:</strong> Limpezas feitas por horário e não por necessidade, gastando materiais e tempo humano de forma ineficiente.</li>
+                        <li><strong>Invisibilidade do Risco:</strong> A qualidade do ar, humidade e presença de potenciais agentes patogénicos não são visíveis a olho nu.</li>
+                        <li><strong>Falsa Segurança:</strong> Os ambientes podem tornar-se críticos e perigosos escassos minutos após uma ronda de limpeza.</li>
+                    </ul>
+                </div>
+
+                <div class="card card-oportunidade-clean">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Decisões Guiadas por Dados</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">A transição para a manutenção <em>data-driven</em> revoluciona completamente a operação diária das instalações.</p>
+                    <ul class="list-modern">
+                        <li><strong>Ação Cirúrgica:</strong> O CleanTrace alerta exatamente onde, quando e como é necessário atuar.</li>
+                        <li><strong>Otimização Financeira:</strong> Redução drástica dos custos operacionais, alocando a equipa apenas onde existe necessidade real.</li>
+                        <li><strong>Segurança Comprovada:</strong> Relatórios automáticos e contínuos que garantem total conformidade com as normas sanitárias exigidas.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="equipa" class="page">
+            <h1 class="section-title">A Nossa <span class="text-gradient">Equipa</span></h1>
+            <div class="grid-5">
+                <div class="card team-member">
+                    <div class="team-photo" style="background-image: url('InêsFreitas.png');"></div>
+                    <h3>Inês Freitas</h3>
+                    <p>CEO</p>
+                </div>
+                <div class="card team-member">
+                    <div class="team-photo" style="background-image: url('CatarinaLamego.png');"></div>
+                    <h3>Catarina Lamego</h3>
+                    <p>COO</p>
+                </div>
+                <div class="card team-member">
+                    <div class="team-photo" style="background-image: url('BeatrizRibeiro.png');"></div>
+                    <h3>Beatriz Ribeiro</h3>
+                    <p>CMO</p>
+                </div>
+                <div class="card team-member">
+                    <div class="team-photo" style="background-image: url('PedroLousinha.png');"></div>
+                    <h3>Pedro Lousinha</h3>
+                    <p>Product Resercher</p>
+                </div>
+                <div class="card team-member">
+                    <div class="team-photo" style="background-image: url('Michele.png');"></div>
+                    <h3>Michele</h3>
+                    <p>Product Manager</p>
+                </div>
+            </div>
+
+            <div class="card cta-banner">
+                <div class="cta-content">
+                    <h2>Quer fazer parte da equipa?</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0;">Na CleanTrace, valorizamos o conhecimento técnico, a colaboração e a vontade de evoluir. Aqui, vai encontrar uma equipa multidisciplinar e dinâmica, onde exigência e inovação caminham lado a lado.</p>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 1rem;">Se procura um ambiente desafiante e que incentive o seu crescimento, descubra como é trabalhar connosco e explore as oportunidades em aberto.</p>
+                </div>
+                <button class="btn" onclick="alert('Em breve: Portal de Carreiras!')">Ver Oportunidades</button>
+            </div>
+        </section>
+
+        <section id="simulacao" class="page">
+            <h1 class="section-title">Planeamento e <span class="text-gradient">Simulação</span></h1>
+            
+            <div class="grid-2">
+                <div class="card pkg-card pkg-lar">
+                    <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">CleanTrace Lar</h3>
+                    <div class="pkg-type">Compra Definitiva</div>
+                    <p style="color: #E0F2FE;">A solução robusta ideal para grandes infraestruturas e gestão centralizada.</p>
+                    <ul class="list-modern">
+                        <li>Compra do hardware de monitorização</li>
+                        <li>Acesso vitalício ao dashboard base</li>
+                        <li>Manutenção anual garantida</li>
+                        <li>Integração com sistemas locais da instituição</li>
+                    </ul>
+                </div>
+
+                <div class="card pkg-card pkg-domicilio">
+                    <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">CleanTrace Domicílio</h3>
+                    <div class="pkg-type">Subscrição Mensal (Aluguer)</div>
+                    <p style="color: #94A3B8;">Perfeito para gestão ágil de cuidados domiciliários sem compromisso inicial.</p>
+                    <ul class="list-modern">
+                        <li>Sem custo inicial de hardware (Zero Setup Fee)</li>
+                        <li>Atualizações de software contínuas via OTA</li>
+                        <li>Substituição de sensores imediata</li>
+                        <li>Suporte prioritário 24/7</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="roi-form-container" style="max-width: 800px; margin: 0 auto;">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--dark-blue);">Simulação de Venda</h2>
+                <form onsubmit="handleSimulation(event)">
+                    <div class="grid-2" style="gap: 1.5rem; margin-bottom: 0;">
+                        <div class="form-group">
+                            <label>Pacote Pretendido</label>
+                            <select required>
+                                <option value="" disabled selected>Selecione a modalidade...</option>
+                                <option value="lar">CleanTrace Lar (Compra)</option>
+                                <option value="domicilio">CleanTrace Domicílio (Aluguer)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nº de Zonas Comuns para implementação</label>
+                            <input type="number" required min="1" placeholder="Ex: 5">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Área total a monitorizar (m²)</label>
+                        <input type="number" required min="10" placeholder="Ex: 800">
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; margin-top: 1rem; font-size: 1.1rem; padding: 1.2rem;">Solicitar Análise Financeira Completa</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="parceiros" class="page">
+            <h1 class="section-title">Seja Nosso <span class="text-gradient">Parceiro</span></h1>
+            
+            <div class="hero" style="padding: 4rem 2rem; text-align: left; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h2 style="color: var(--light-blue); margin-bottom: 1rem; letter-spacing: 2px;">CRESCIMENTO CONJUNTO</h2>
+                    <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--white);">A revolução não se faz de forma isolada.</h1>
+                    <p style="color: #CBD5E1; font-size: 1.1rem; max-width: 600px; margin: 0;">Na CleanTrace procuramos estabelecer sinergias e alianças de valor com distribuidores, instituições de saúde e empresas de gestão e manutenção de infraestruturas.</p>
+                </div>
+            </div>
+
+            <div class="card" style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <h3 style="font-size: 1.8rem; margin-bottom: 1rem;">Tem interesse em juntar-se à nossa rede?</h3>
+                <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Preencha o formulário abaixo e um membro da nossa equipa executiva entrará em contacto para agendarmos uma reunião.</p>
+                
+                <form onsubmit="alert('Obrigado pelo seu interesse! A nossa equipa entrará em contacto muito brevemente.'); return false;">
+                    <div class="grid-2" style="gap: 1.5rem; margin-bottom: 0;">
+                        <div class="form-group">
+                            <label>Nome da Empresa / Instituição</label>
+                            <input type="text" required placeholder="Ex: Nome da Empresa">
+                        </div>
+                        <div class="form-group">
+                            <label>Pessoa de Contacto</label>
+                            <input type="text" required placeholder="O seu nome">
+                        </div>
+                    </div>
+                    <div class="grid-2" style="gap: 1.5rem; margin-bottom: 0;">
+                        <div class="form-group">
+                            <label>Email Profissional</label>
+                            <input type="email" required placeholder="email@empresa.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input type="tel" required placeholder="+351 900 000 000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Parceria Desejada</label>
+                        <select required>
+                            <option value="" disabled selected>Selecione uma opção...</option>
+                            <option value="distribuidor">Distribuidor Comercial</option>
+                            <option value="instituicao">Projeto Piloto / Instituição de Saúde</option>
+                            <option value="facilities">Empresa de Manutenção / Facilities</option>
+                            <option value="outro">Outro (Especificar na mensagem)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mensagem Breve</label>
+                        <textarea rows="4" placeholder="Conte-nos um pouco sobre a sua visão para esta parceria..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; font-size: 1.1rem; padding: 1.2rem;">Enviar Proposta de Parceria</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <h3 style="color: var(--light-blue); margin-bottom: 1rem;">CleanTrace</h3>
+        <p><span>R. da Firmeza 369, 4000-225 Porto</span></p>
+        <p><span>contacto@cleantrace.pt</span></p>
+        <p><span>www.cleantrace.pt</span></p>
+        <p style="margin-top: 2rem; font-size: 0.8rem; color: #94A3B8;">&copy; 2026 CleanTrace.</p>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('nav a').forEach(link => link.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.getElementById('link-' + pageId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleSimulation(event) {
+            event.preventDefault();
+            alert('A sua resposta foi submetida com sucesso! Enviaremos um email brevemente com a sua simulação financeira detalhada.');
+            event.target.reset();
+        }
+    </script>
+</body>
+</html>
